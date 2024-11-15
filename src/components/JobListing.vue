@@ -1,15 +1,8 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
 import { computed, defineProps, ref } from 'vue'
+import type { Job } from '@/utils/type'
 
-interface Job {
-  id: string
-  title: string
-  type: string
-  description: string
-  salary: string
-  location: string
-}
 const props = defineProps<{ job: Job }>()
 
 const isShowFullDescription = ref(false)

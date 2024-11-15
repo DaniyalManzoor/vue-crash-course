@@ -1,13 +1,16 @@
 <script setup lang="ts">
-import { reactive } from 'vue'
-import { useRouter } from 'vue-router'
+import { onMounted, reactive } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useToast } from 'vue-toastification'
 
 import axios from '@/utils/axios'
 import type { Job, JobWithoutId } from '@/utils/type'
 
 const toast = useToast()
+const route = useRoute()
 const router = useRouter()
+
+const jobId = route.params.id
 
 const form = reactive<JobWithoutId>({
   type: 'Full-Time',
@@ -22,9 +25,15 @@ const form = reactive<JobWithoutId>({
     contactPhone: '',
   },
 })
+const state = reactive({
+  job: {} as Job,
+  isLoading: true,
+  isError: false,
+})
+
 const handleSubmit = async () => {
   try {
-    const newJob: JobWithoutId = {
+    const updateJob: JobWithoutId = {
       type: form.type,
       title: form.title,
       description: form.description,
@@ -37,14 +46,36 @@ const handleSubmit = async () => {
         contactPhone: form.company.contactPhone,
       },
     }
-    const res = await axios.post<Job>('/jobs', newJob)
-    toast.success(`Job Added Successfully for ${res.data.title}`)
+    const res = await axios.put<Job>(`/jobs/${jobId}`, updateJob)
+    toast.success(`Job Updated Successfully for ${res.data.title}`)
     router.push(`/jobs/${res.data.id}`)
   } catch (error) {
     console.error('add-job-error', error)
-    toast.error('Job Was Not Added')
+    toast.error('Job Was Not Updated')
   }
 }
+
+onMounted(async () => {
+  try {
+    const { data } = await axios.get<Job>(`jobs/${jobId}`)
+    state.job = data
+    //Populate inputs
+    form.type = data.type
+    form.title = data.title
+    form.description = data.description
+    form.salary = data.salary
+    form.location = data.location
+    form.company.name = data.company.name
+    form.company.description = data.company.description
+    form.company.contactPhone = data.company.contactPhone
+    form.company.contactEmail = data.company.contactEmail
+  } catch (error) {
+    console.error('error-fetching-job-listing', error)
+    state.isError = true
+  } finally {
+    state.isLoading = false
+  }
+})
 </script>
 
 <template>
@@ -52,7 +83,7 @@ const handleSubmit = async () => {
     <div class="m-auto py-24 max-w-2xl container">
       <div class="bg-white shadow-md m-4 md:m-0 mb-4 px-6 py-8 border rounded-md">
         <form @submit.prevent="handleSubmit">
-          <h2 class="mb-6 font-semibold text-3xl text-center">Add Job</h2>
+          <h2 class="mb-6 font-semibold text-3xl text-center">Edit Job</h2>
           <div class="mb-4">
             <label for="type" class="block mb-2 font-bold text-gray-700">Job Type</label>
             <select
@@ -189,7 +220,7 @@ const handleSubmit = async () => {
             class="bg-green-500 hover:bg-green-600 focus:shadow-outline px-4 py-2 rounded-full w-full font-bold text-white focus:outline-none"
             type="submit"
           >
-            Add Job
+            Update Job
           </button>
         </form>
       </div>
