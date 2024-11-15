@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { RouterLink } from 'vue-router'
 import { computed, defineProps, ref } from 'vue'
 
 interface Job {
@@ -47,12 +48,12 @@ const handleIsShowFullDescription = () => {
           <i class="pi-map-marker text-lg text-orange-500 pi"></i>
           {{ job.location }}
         </div>
-        <a
-          :href="`/job/${job.id}`"
+        <RouterLink
+          :to="`/jobs/${job.id}`"
           class="bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg h-[36px] text-center text-sm text-white"
         >
           Read More
-        </a>
+        </RouterLink>
       </div>
     </div>
   </div>
